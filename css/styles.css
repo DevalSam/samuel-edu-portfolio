@@ -270,6 +270,32 @@ nav {
     font-size: 3rem;
     color: white;
     box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.profile-avatar:hover .profile-image {
+    transform: scale(1.1);
+}
+
+/* Fallback icon styles (if image fails to load) */
+.profile-avatar i {
+    display: none;
+}
+
+.profile-avatar:not(:has(.profile-image)) i,
+.profile-avatar .profile-image[src=""] + i,
+.profile-avatar .profile-image:not([src]) + i {
+    display: block;
 }
 
 .profile-info h3 {
