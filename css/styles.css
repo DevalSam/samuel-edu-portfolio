@@ -157,10 +157,8 @@ nav {
     font-size: 3.5rem;
     font-weight: 800;
     margin-bottom: 1rem;
-    background: var(--gradient-1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     animation: slideInLeft 1s ease-out;
 }
 
