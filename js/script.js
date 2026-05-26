@@ -660,6 +660,666 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// ==========================================
+// Demo Showcase Modal & Slide Reels Controller
+// ==========================================
+
+const demoModal = document.getElementById('demo-modal');
+const demoModalClose = document.getElementById('demo-modal-close');
+const demoModalContent = document.getElementById('demo-modal-content');
+const demoModalOverlay = demoModal ? demoModal.querySelector('.demo-modal-overlay') : null;
+
+// Demo content registry
+const demoContents = {
+    'polka-evm-app': {
+        title: 'Polka-EVM-App',
+        tech: ['Solidity', 'TypeScript', 'React', 'Polkadot API', 'Ethers.js'],
+        slides: [
+            {
+                title: 'Smart Contract Compilation & Deployment',
+                desc: 'Compiling Solidity smart contracts and deploying them directly onto Polkadot Parachain EVM networks (e.g. Moonbeam, Astar).',
+                visual: `<div class="console-terminal" id="polka-terminal-1">
+                    <div class="console-line">> contracts/Compiling ERC-20 Ledger token...</div>
+                </div>`,
+                interactive: `<button class="btn-inline-demo" id="btn-compile-demo"><i class="fas fa-hammer"></i> Run Compile & Deploy</button>`
+            },
+            {
+                title: 'Web3 Wallet Handshake',
+                desc: 'Connecting decentralized browser extensions (like MetaMask or Polkadot.js) and matching EVM account keys for state access.',
+                visual: `<div class="wallet-mock-container" style="display:flex; flex-direction:column; align-items:center; gap:1rem; width:80%;">
+                    <div id="wallet-status-box" style="padding:1rem; border-radius:10px; background:rgba(255,255,255,0.05); border:1px dashed var(--border); width:100%; text-align:center;">
+                        <i class="fas fa-wallet" style="font-size:2rem; margin-bottom:0.5rem; color:var(--primary);"></i>
+                        <div>Wallet Status: <strong>Disconnected</strong></div>
+                    </div>
+                </div>`,
+                interactive: `<button class="btn-inline-demo" id="btn-wallet-connect-demo"><i class="fas fa-plug"></i> Connect Mock Wallet</button>`
+            },
+            {
+                title: 'EVM Contract Interaction (State Writes)',
+                desc: 'Sending transaction payloads to modify smart contract storage, listening for block emission events, and rendering real-time UI state updates.',
+                visual: `<div class="interaction-mock-container" style="display:flex; flex-direction:column; gap:0.75rem; width:90%;">
+                    <div class="form-group" style="margin-bottom:0px; width: 100%;">
+                        <input type="text" id="contract-greet-input" placeholder="Enter greeting..." value="Hello Polkadot EVM!" style="padding:0.7rem; font-size:0.9rem; width:100%; border-radius:8px; border:1px solid var(--border); background:rgba(26,26,46,0.4); color:var(--text-primary);">
+                    </div>
+                    <div id="contract-response-box" style="padding:0.8rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); border-radius:8px; display:none; text-align:left; font-family:monospace; font-size:0.85rem; color:#10b981; width:100%;">
+                    </div>
+                </div>`,
+                interactive: `<button class="btn-inline-demo" id="btn-contract-call-demo"><i class="fas fa-paper-plane"></i> Execute Write (greet)</button>`
+            }
+        ]
+    },
+    'verydot-core': {
+        title: 'VeryDot-Core P2P Protocol',
+        tech: ['Rust', 'Substrate', 'P2P Net', 'Escrow Account', 'Polkadot Relay'],
+        slides: [
+            {
+                title: 'Decentralized P2P Node Handshake',
+                desc: 'Establishing secure peer connections between buyers, sellers, and oracle nodes across the Substrate network.',
+                visual: `<div class="flowchart-container" id="p2p-flowchart">
+                    <div class="flowchart-node" id="node-buyer"><i class="fas fa-user" style="margin-bottom: 4px;"></i>Buyer Node</div>
+                    <div class="flowchart-arrow"><i class="fas fa-exchange-alt"></i></div>
+                    <div class="flowchart-node" id="node-relay"><i class="fas fa-network-wired" style="margin-bottom: 4px;"></i>P2P Relay</div>
+                    <div class="flowchart-arrow"><i class="fas fa-exchange-alt"></i></div>
+                    <div class="flowchart-node" id="node-seller"><i class="fas fa-user-tie" style="margin-bottom: 4px;"></i>Seller Node</div>
+                </div>`,
+                interactive: `<button class="btn-inline-demo" id="btn-handshake-demo"><i class="fas fa-sync-alt"></i> Execute Handshake</button>`
+            },
+            {
+                title: 'Escrow Lockup & Vault Staking',
+                desc: 'Depositing assets into a smart substrate multisig vault where funds are securely frozen pending transaction verification.',
+                visual: `<div class="escrow-visual-container" style="text-align:center;">
+                    <div id="vault-status" style="font-size:3rem; color:var(--text-secondary); margin-bottom:1rem; transition:color 0.5s;">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div id="vault-text" style="font-weight:600;">Vault Status: Locked</div>
+                </div>`,
+                interactive: `<button class="btn-inline-demo" id="btn-vault-lock-demo"><i class="fas fa-unlock-alt"></i> Unlock / Reset Escrow</button>`
+            },
+            {
+                title: 'P2P Hash Verification',
+                desc: 'Validating product file integrity on the buyer side by comparing cryptographic SHA-256 hashes against substrate-anchored receipts.',
+                visual: `<div class="hash-visual-container" style="display:flex; flex-direction:column; gap:0.5rem; width:80%; text-align:left; font-family:monospace; font-size:0.85rem; word-break:break-all;">
+                    <div>Expected Hash: <span style="color:var(--primary); font-weight:700;">f8c4e2a9b70d51f67f2b189a05de23789ccb8ef091102ef</span></div>
+                    <div>Computed Hash: <span id="computed-hash-val" style="color:var(--text-secondary);">Waiting verification...</span></div>
+                    <div id="hash-match-status" style="font-weight:700; margin-top:0.5rem; text-align:center;"></div>
+                </div>`,
+                interactive: `<button class="btn-inline-demo" id="btn-verify-hash-demo"><i class="fas fa-fingerprint"></i> Compute & Verify Hash</button>`
+            },
+            {
+                title: 'Block Settlement & Payout Release',
+                desc: 'Broadcasting confirmation signatures to the blockchain, triggering smart payout transfers to the seller, and recording metrics.',
+                visual: `<div class="settle-visual-container" style="width:90%;">
+                    <div id="block-settle-logs" class="console-terminal" style="height:140px;">
+                        <div class="console-line">Ready for block submission...</div>
+                    </div>
+                </div>`,
+                interactive: `<button class="btn-inline-demo" id="btn-settle-demo"><i class="fas fa-check-circle"></i> Broadcast Settlement</button>`
+            }
+        ]
+    },
+    'ai-text-processor': {
+        title: 'AI-Powered Text Processor',
+        tech: ['TypeScript', 'LangChain', 'AI Agents', 'OpenRouter', 'Deno Edge'],
+        isPlayground: true
+    }
+};
+
+// Open Modal
+function openDemoModal(demoId) {
+    if (!demoModal || !demoModalContent) return;
+    
+    const data = demoContents[demoId];
+    if (!data) return;
+    
+    document.body.style.overflow = 'hidden';
+    demoModal.classList.add('active');
+    
+    if (data.isPlayground) {
+        renderPlaygroundView(data);
+    } else {
+        renderSlideReelView(data);
+    }
+}
+
+// Close Modal
+function closeDemoModal() {
+    if (!demoModal) return;
+    demoModal.classList.remove('active');
+    document.body.style.overflow = '';
+    if (demoModalContent) demoModalContent.innerHTML = '';
+}
+
+if (demoModalClose) demoModalClose.addEventListener('click', closeDemoModal);
+if (demoModalOverlay) demoModalOverlay.addEventListener('click', closeDemoModal);
+
+// Intercept Demo links click
+document.addEventListener('click', (e) => {
+    const demoLink = e.target.closest('a[data-demo]');
+    if (demoLink) {
+        e.preventDefault();
+        const demoId = demoLink.getAttribute('data-demo');
+        openDemoModal(demoId);
+    }
+});
+
+// Slide Reel Renderer
+let currentSlideIndex = 0;
+function renderSlideReelView(data) {
+    currentSlideIndex = 0;
+    
+    const techBadges = data.tech.map(t => `<span class="tech-badge">${t}</span>`).join('');
+    
+    let slidesHtml = '';
+    let dotsHtml = '';
+    
+    data.slides.forEach((slide, idx) => {
+        slidesHtml += `
+            <div class="carousel-slide ${idx === 0 ? 'active' : ''}" data-index="${idx}">
+                <div class="slide-visual">
+                    ${slide.visual}
+                </div>
+                <div class="slide-caption-title">${slide.title}</div>
+                <div class="slide-caption-desc">${slide.desc}</div>
+                <div class="slide-interactive-element">
+                    ${slide.interactive}
+                </div>
+            </div>
+        `;
+        dotsHtml += `<div class="slide-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></div>`;
+    });
+    
+    demoModalContent.innerHTML = `
+        <div class="reel-header">
+            <h3>${data.title} - Showcase Reel</h3>
+            <div class="tech-badge-container">
+                ${techBadges}
+            </div>
+        </div>
+        <div class="reel-body">
+            <div class="carousel-slides-wrapper">
+                ${slidesHtml}
+            </div>
+        </div>
+        <div class="reel-footer">
+            <button class="btn-nav-slide" id="btn-prev-slide" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+            <div class="slide-dots">
+                ${dotsHtml}
+            </div>
+            <button class="btn-nav-slide" id="btn-next-slide">Next <i class="fas fa-chevron-right"></i></button>
+        </div>
+    `;
+    
+    // Bind navigation buttons
+    const prevBtn = document.getElementById('btn-prev-slide');
+    const nextBtn = document.getElementById('btn-next-slide');
+    const slides = demoModalContent.querySelectorAll('.carousel-slide');
+    const dots = demoModalContent.querySelectorAll('.slide-dot');
+    
+    const updateSlideView = () => {
+        slides.forEach((slide, idx) => {
+            if (idx === currentSlideIndex) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+        dots.forEach((dot, idx) => {
+            if (idx === currentSlideIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+        
+        prevBtn.disabled = currentSlideIndex === 0;
+        nextBtn.disabled = currentSlideIndex === data.slides.length - 1;
+        
+        // Execute slide load-in triggers
+        initSlideInteractive(data.title, currentSlideIndex);
+    };
+    
+    prevBtn.addEventListener('click', () => {
+        if (currentSlideIndex > 0) {
+            currentSlideIndex--;
+            updateSlideView();
+        }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        if (currentSlideIndex < data.slides.length - 1) {
+            currentSlideIndex++;
+            updateSlideView();
+        }
+    });
+    
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            currentSlideIndex = parseInt(dot.getAttribute('data-index'));
+            updateSlideView();
+        });
+    });
+    
+    // Initial load
+    initSlideInteractive(data.title, 0);
+}
+
+// Slide Interactive simulation triggers
+function initSlideInteractive(projectTitle, slideIdx) {
+    if (projectTitle.includes('Polka-EVM-App')) {
+        if (slideIdx === 0) {
+            const btn = document.getElementById('btn-compile-demo');
+            const term = document.getElementById('polka-terminal-1');
+            if (btn && term) {
+                btn.onclick = () => {
+                    btn.disabled = true;
+                    term.innerHTML = '';
+                    const logs = [
+                        '> solidity compiler version: 0.8.20+commit.a1b2c3d4',
+                        '> Compiling standard ERC-20 Ledger token (Ledger.sol)...',
+                        '> ABI generated successfully. Bytecode compiled: 4326 bytes.',
+                        '> Connecting to Moonbeam Alpha Parachain Node...',
+                        '> Sending EVM contract creation transaction (gas price: 100 Gwei)...',
+                        '> Broadcasted. Waiting for block inclusion...',
+                        '> Transaction Hash: 0xa87c92b3d881ef126588a45e99812b109e25c04b8686e58cf7b6c7aef516c29a',
+                        '> Block Mined! Contract deployed at address: 0x4f3aE8c6B999a0E927c3f81eEa2B3D55c2826a7E',
+                        '> SUCCESS: Polka EVM contract instance active!'
+                    ];
+                    let delay = 0;
+                    logs.forEach((line) => {
+                        setTimeout(() => {
+                            const lDiv = document.createElement('div');
+                            lDiv.className = 'console-line';
+                            lDiv.textContent = line;
+                            term.appendChild(lDiv);
+                            term.scrollTop = term.scrollHeight;
+                        }, delay);
+                        delay += 300;
+                    });
+                    setTimeout(() => { btn.disabled = false; }, delay);
+                };
+            }
+        } else if (slideIdx === 1) {
+            const btn = document.getElementById('btn-wallet-connect-demo');
+            const box = document.getElementById('wallet-status-box');
+            if (btn && box) {
+                btn.onclick = () => {
+                    btn.disabled = true;
+                    box.innerHTML = `<i class="fas fa-spinner fa-spin" style="font-size:2rem; margin-bottom:0.5rem; color:var(--primary);"></i><div>Connecting MetaMask extension...</div>`;
+                    setTimeout(() => {
+                        box.innerHTML = `
+                            <i class="fas fa-check-circle" style="font-size:2rem; margin-bottom:0.5rem; color:#10b981;"></i>
+                            <div>Wallet Connected: <strong style="font-family:monospace; color:#10b981;">0x71C4B441F1A3A9b7297e700dE047b47409893530</strong></div>
+                            <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.25rem;">Network: Moonbase Alpha (EVM-1287)</div>
+                        `;
+                        btn.innerHTML = `<i class="fas fa-unlink"></i> Disconnect Wallet`;
+                        btn.disabled = false;
+                        btn.onclick = () => {
+                            btn.innerHTML = `<i class="fas fa-plug"></i> Connect Mock Wallet`;
+                            box.innerHTML = `
+                                <i class="fas fa-wallet" style="font-size:2rem; margin-bottom:0.5rem; color:var(--primary);"></i>
+                                <div>Wallet Status: <strong>Disconnected</strong></div>
+                            `;
+                            initSlideInteractive(projectTitle, slideIdx);
+                        };
+                    }, 1200);
+                };
+            }
+        } else if (slideIdx === 2) {
+            const btn = document.getElementById('btn-contract-call-demo');
+            const input = document.getElementById('contract-greet-input');
+            const resp = document.getElementById('contract-response-box');
+            if (btn && input && resp) {
+                btn.onclick = () => {
+                    const txt = input.value.trim() || 'Hello EVM!';
+                    btn.disabled = true;
+                    resp.style.display = 'block';
+                    resp.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Dispatching greet("${txt}") transaction...`;
+                    setTimeout(() => {
+                        resp.innerHTML = `
+                            <div style="margin-bottom:0.25rem; font-weight:700; color:#10b981;">✔ Tx Confirmed in Block #284712</div>
+                            <div>Storage set -> greeting = "${txt}"</div>
+                            <div style="color:var(--text-secondary); font-size:0.8rem; margin-top:0.2rem;">Gas Used: 43,261 Gwei | Block Hash: 0xf37...b2a</div>
+                        `;
+                        btn.disabled = false;
+                    }, 1400);
+                };
+            }
+        }
+    } else if (projectTitle.includes('VeryDot-Core')) {
+        if (slideIdx === 0) {
+            const btn = document.getElementById('btn-handshake-demo');
+            const buyer = document.getElementById('node-buyer');
+            const relay = document.getElementById('node-relay');
+            const seller = document.getElementById('node-seller');
+            if (btn && buyer && relay && seller) {
+                btn.onclick = () => {
+                    btn.disabled = true;
+                    buyer.className = 'flowchart-node highlight';
+                    setTimeout(() => {
+                        relay.className = 'flowchart-node highlight';
+                        setTimeout(() => {
+                            seller.className = 'flowchart-node highlight';
+                            btn.innerHTML = `<i class="fas fa-link"></i> Handshake Established`;
+                            setTimeout(() => {
+                                buyer.className = 'flowchart-node';
+                                relay.className = 'flowchart-node';
+                                seller.className = 'flowchart-node';
+                                btn.innerHTML = `<i class="fas fa-sync-alt"></i> Execute Handshake`;
+                                btn.disabled = false;
+                            }, 2000);
+                        }, 500);
+                    }, 500);
+                };
+            }
+        } else if (slideIdx === 1) {
+            const btn = document.getElementById('btn-vault-lock-demo');
+            const icon = document.getElementById('vault-status');
+            const text = document.getElementById('vault-text');
+            if (btn && icon && text) {
+                btn.onclick = () => {
+                    btn.disabled = true;
+                    icon.style.color = '#10b981';
+                    icon.innerHTML = `<i class="fas fa-lock"></i>`;
+                    text.innerHTML = `Vault Locked: <span style="color:#10b981;">1,250 DOT Deposited</span>`;
+                    btn.innerHTML = `<i class="fas fa-unlock-alt"></i> Unlock / Reset Escrow`;
+                    btn.disabled = false;
+                    btn.onclick = () => {
+                        icon.style.color = 'var(--text-secondary)';
+                        icon.innerHTML = `<i class="fas fa-lock-open"></i>`;
+                        text.innerHTML = 'Vault Status: Unlocked';
+                        btn.innerHTML = `<i class="fas fa-key"></i> Lock Funds in Escrow`;
+                        initSlideInteractive(projectTitle, slideIdx);
+                    };
+                };
+            }
+        } else if (slideIdx === 2) {
+            const btn = document.getElementById('btn-verify-hash-demo');
+            const computed = document.getElementById('computed-hash-val');
+            const status = document.getElementById('hash-match-status');
+            if (btn && computed && status) {
+                btn.onclick = () => {
+                    btn.disabled = true;
+                    computed.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Digesting product binary...`;
+                    status.innerHTML = '';
+                    setTimeout(() => {
+                        computed.innerHTML = `<span style="color:#10b981; font-weight:700;">f8c4e2a9b70d51f67f2b189a05de23789ccb8ef091102ef</span>`;
+                        status.innerHTML = `<i class="fas fa-check-circle" style="color:#10b981;"></i> Cryptographic checksum match verified!`;
+                        btn.disabled = false;
+                    }, 1200);
+                };
+            }
+        } else if (slideIdx === 3) {
+            const btn = document.getElementById('btn-settle-demo');
+            const term = document.getElementById('block-settle-logs');
+            if (btn && term) {
+                btn.onclick = () => {
+                    btn.disabled = true;
+                    term.innerHTML = '';
+                    const logs = [
+                        '> Initiating settlement dispatch protocol...',
+                        '> Collecting signature shares from escrow oracles...',
+                        '> Signature 1 (Buyer): Verified (0x8ef4...21a)',
+                        '> Signature 2 (Seller): Verified (0x4cb9...88d)',
+                        '> Combining witness claims & generating block extrinsics...',
+                        '> Submitting extrinsic to Polkadot VeryDot Parachain...',
+                        '> Block #4,182,752 validated successfully.',
+                        '> 1,250 DOT disbursed to seller account 0x92f...7e4.',
+                        '> Settlement finalized.'
+                    ];
+                    let delay = 0;
+                    logs.forEach((line) => {
+                        setTimeout(() => {
+                            const lDiv = document.createElement('div');
+                            lDiv.className = 'console-line';
+                            lDiv.textContent = line;
+                            term.appendChild(lDiv);
+                            term.scrollTop = term.scrollHeight;
+                        }, delay);
+                        delay += 250;
+                    });
+                    setTimeout(() => { btn.disabled = false; }, delay);
+                };
+            }
+        }
+    }
+}
+
+// Mini AI Playground Renderer
+const presets = {
+    summarize: "This Software as a Service Agreement ('Agreement') is entered into by and between CloudSaaS Corp ('Provider') and AcmeTech LLC ('Customer'). Provider agrees to deliver enterprise-grade cloud analytics tools, offering 99.9% uptime SLA and 24/7 dedicated engineering support. Customer will pay a recurring subscription fee of $4,500/month, payable within 30 days of invoicing. Either party may terminate with a 60-day written notice.",
+    entities: "Samuel Edu is a Full Stack Developer, DevOps Engineer, and AI Agents Developer based in Nigeria. He is the co-founder of Genuine Stuffs and specializes in React, Node.js, and Substrate blockchain infrastructure.",
+    sentiment: "I absolutely love the new workspace layout! The design is extremely premium, fonts are highly readable, and the light/dark mode transitions are so smooth. Best update ever!"
+};
+
+const simulatedResponses = {
+    summarizer: `### AI Summarization Output
+
+**Core Document:** SaaS Agreement between CloudSaaS Corp (Provider) and AcmeTech LLC (Customer).
+
+**Key Provisions:**
+- **Service Offering:** Cloud analytics tools with a **99.9% uptime SLA** and 24/7 support.
+- **Pricing:** **$4,500/month** subscription fee (30-day payment term).
+- **Termination Term:** Requires **60-day written notice** by either party.`,
+    
+    extractor: `{
+  "document_type": "professional_bio",
+  "entities": [
+    {
+      "name": "Samuel Edu",
+      "type": "Person",
+      "roles": [
+        "Full Stack Developer",
+        "DevOps Engineer",
+        "AI Agents Developer",
+        "Co-founder"
+      ]
+    },
+    {
+      "name": "Nigeria",
+      "type": "Location",
+      "role": "Country of residence/work"
+    },
+    {
+      "name": "Genuine Stuffs",
+      "type": "Organization",
+      "role": "Co-founded enterprise"
+    },
+    {
+      "name": "React, Node.js, Substrate",
+      "type": "Technologies",
+      "role": "Technical specializations"
+    }
+  ]
+}`,
+    
+    sentiment: `### Sentiment Analysis Report
+
+- **Overall Sentiment Rating:** **98/100** (Strongly Positive)
+- **Primary Emotions Detected:** Satisfaction, Enthusiasm, Appreciation.
+- **Key Extractable Drivers:**
+  1. *Workspace layout* ("absolutely love")
+  2. *Visual Aesthetics* ("extremely premium")
+  3. *Typography/Readability* ("highly readable")
+  4. *Transitions* ("so smooth")`
+};
+
+function renderPlaygroundView(data) {
+    demoModalContent.innerHTML = `
+        <div class="reel-header">
+            <h3>${data.title} - Mini AI Playground</h3>
+            <div class="tech-badge-container">
+                ${data.tech.map(t => `<span class="tech-badge">${t}</span>`).join('')}
+            </div>
+            <p style="font-size:0.95rem; color:var(--text-secondary); margin-bottom: 0.5rem;">Test out the core capabilities of the AI Agent-driven text pipeline below. Select an agent, choose a preset, or write your own text to execute.</p>
+        </div>
+        
+        <div class="playground-container">
+            <div class="playground-input-group">
+                <label for="playground-text" style="font-size: 0.9rem; font-weight: 700;">Input Text</label>
+                <textarea id="playground-text" class="playground-textarea" placeholder="Enter text here...">${presets.summarize}</textarea>
+            </div>
+            
+            <div class="playground-presets">
+                <span class="preset-chip" data-preset="summarize">SaaS Contract (Summarize)</span>
+                <span class="preset-chip" data-preset="entities">Bio Profile (Extract Entities)</span>
+                <span class="preset-chip" data-preset="sentiment">User Feedback (Sentiment Analysis)</span>
+            </div>
+            
+            <div class="playground-config-row">
+                <div class="agent-selector">
+                    <button class="agent-btn active" data-agent="summarizer">Summarizer Agent</button>
+                    <button class="agent-btn" data-agent="extractor">Entity Extractor</button>
+                    <button class="agent-btn" data-agent="sentiment">Sentiment Analyzer</button>
+                </div>
+                <button class="btn-play-run" id="btn-run-ai">
+                    <i class="fas fa-play"></i> Run Agent Pipeline
+                </button>
+            </div>
+            
+            <div class="playground-trace-panel" id="playground-trace">
+                <div class="trace-line system"><i class="fas fa-terminal"></i> Ready to run agent execution trace...</div>
+            </div>
+            
+            <div class="playground-output-area">
+                <div class="output-header-row">
+                    <span style="font-size: 0.9rem; font-weight: 700;">Structured Output</span>
+                    <button class="btn-inline-demo" id="btn-copy-output" style="padding:0.35rem 0.75rem; font-size:0.8rem; display:none;"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+                <div class="playground-output-box empty" id="playground-output">
+                    Click 'Run Agent Pipeline' to see results.
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Selectors
+    const textarea = document.getElementById('playground-text');
+    const runBtn = document.getElementById('btn-run-ai');
+    const tracePanel = document.getElementById('playground-trace');
+    const outputBox = document.getElementById('playground-output');
+    const copyBtn = document.getElementById('btn-copy-output');
+    const chips = demoModalContent.querySelectorAll('.preset-chip');
+    const agentBtns = demoModalContent.querySelectorAll('.agent-btn');
+    
+    let activeAgent = 'summarizer';
+    
+    // Preset chip triggers
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const key = chip.getAttribute('data-preset');
+            textarea.value = presets[key];
+            
+            // Auto match agent type
+            agentBtns.forEach(btn => btn.classList.remove('active'));
+            if (key === 'summarize') {
+                activeAgent = 'summarizer';
+                document.querySelector('[data-agent="summarizer"]').classList.add('active');
+            } else if (key === 'entities') {
+                activeAgent = 'extractor';
+                document.querySelector('[data-agent="extractor"]').classList.add('active');
+            } else if (key === 'sentiment') {
+                activeAgent = 'sentiment';
+                document.querySelector('[data-agent="sentiment"]').classList.add('active');
+            }
+        });
+    });
+    
+    // Agent buttons toggle
+    agentBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            agentBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeAgent = btn.getAttribute('data-agent');
+        });
+    });
+    
+    // Copy output
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(outputBox.textContent).then(() => {
+            copyBtn.innerHTML = `<i class="fas fa-check"></i> Copied!`;
+            setTimeout(() => {
+                copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy`;
+            }, 2000);
+        });
+    });
+    
+    // Run Simulated AI
+    runBtn.addEventListener('click', () => {
+        const textValue = textarea.value.trim();
+        if (!textValue) {
+            showNotification('Please enter some text in the input box first.', 'info');
+            return;
+        }
+        
+        // Disable UX
+        textarea.disabled = true;
+        runBtn.disabled = true;
+        chips.forEach(c => c.style.pointerEvents = 'none');
+        agentBtns.forEach(b => b.disabled = true);
+        copyBtn.style.display = 'none';
+        
+        outputBox.innerHTML = '';
+        outputBox.classList.add('empty');
+        outputBox.textContent = 'Agent running...';
+        
+        // Trace logs sequence
+        tracePanel.innerHTML = '';
+        const steps = [
+            { t: 0, text: `[System] Bootstrapping AI sandbox env...`, type: 'system' },
+            { t: 400, text: `[Agent] Initializing LangChain core execution flow for ${activeAgent}...`, type: 'agent' },
+            { t: 900, text: `[Agent] Pre-processing input (character count: ${textValue.length})...`, type: 'agent' },
+            { t: 1400, text: `[System] Sending prompts to OpenRouter inference API (model: meta-llama/llama-3-8b-instruct)...`, type: 'system' },
+            { t: 2000, text: `[System] Fetching completion response headers...`, type: 'system' },
+            { t: 2500, text: `[Agent] Structuring output and parsing raw completion schema...`, type: 'agent' },
+            { t: 3000, text: `[System] Execution finished in 3042ms. Output schema verified.`, type: 'success' }
+        ];
+        
+        steps.forEach(step => {
+            setTimeout(() => {
+                const line = document.createElement('div');
+                line.className = `trace-line ${step.type}`;
+                
+                let iconClass = 'fa-terminal';
+                if (step.type === 'agent') iconClass = 'fa-robot';
+                if (step.type === 'success') iconClass = 'fa-check';
+                
+                line.innerHTML = `<i class="fas ${iconClass}"></i><span>${step.text}</span>`;
+                tracePanel.appendChild(line);
+                tracePanel.scrollTop = tracePanel.scrollHeight;
+            }, step.t);
+        });
+        
+        // Final Output Typewriter emission
+        setTimeout(() => {
+            outputBox.innerHTML = '';
+            outputBox.classList.remove('empty');
+            const targetOutput = simulatedResponses[activeAgent];
+            
+            let charIndex = 0;
+            const speed = 6; // Typing speed in ms
+            
+            const typeText = () => {
+                if (charIndex < targetOutput.length) {
+                    outputBox.innerHTML += targetOutput.charAt(charIndex);
+                    charIndex++;
+                    outputBox.scrollTop = outputBox.scrollHeight;
+                    setTimeout(typeText, speed);
+                } else {
+                    // Re-enable UI controls
+                    textarea.disabled = false;
+                    runBtn.disabled = false;
+                    chips.forEach(c => c.style.pointerEvents = 'auto');
+                    agentBtns.forEach(b => b.disabled = false);
+                    copyBtn.style.display = 'block';
+                }
+            };
+            
+            typeText();
+            
+        }, 3100);
+    });
+}
+
 // Add error handling
 window.addEventListener('error', (e) => {
     console.error('JavaScript error:', e.error);
