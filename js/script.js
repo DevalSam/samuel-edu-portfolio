@@ -565,10 +565,10 @@ function updateToggleIcon(theme) {
     if (!icon) return;
     
     if (theme === 'light') {
-        icon.className = 'fas fa-sun';
-        icon.style.transform = 'rotate(180deg)';
-    } else {
         icon.className = 'fas fa-moon';
+        icon.style.transform = 'rotate(360deg)';
+    } else {
+        icon.className = 'fas fa-sun';
         icon.style.transform = 'rotate(0deg)';
     }
 }
