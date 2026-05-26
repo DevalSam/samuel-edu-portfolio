@@ -16,9 +16,28 @@
     --card-bg: #1a1a2e;
     --card-hover: #16213e;
     --text-primary: #ffffff;
-    --text-secondary: #a0aec0;
+    --text-secondary: #cbd5e1; /* Brighter slate-300 for dark mode readability */
     --border: rgba(255, 255, 255, 0.1);
     --glow: 0 0 30px rgba(99, 102, 241, 0.3);
+    
+    /* Variable placeholders for themes */
+    --nav-bg: rgba(15, 15, 35, 0.95);
+    --bg-gradient: radial-gradient(ellipse at top, #1e1b4b 0%, #0f0f23 50%);
+    --shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    --transition-speed: 0.3s;
+}
+
+[data-theme="light"] {
+    --dark-bg: #f8fafc; /* Slate-50 background */
+    --card-bg: #ffffff; /* White card background */
+    --card-hover: #f1f5f9; /* Softer light hover */
+    --text-primary: #0f172a; /* Deep slate-900 primary text */
+    --text-secondary: #475569; /* Slate-600 secondary text */
+    --border: rgba(0, 0, 0, 0.08); /* Softer dark borders */
+    --glow: 0 0 30px rgba(99, 102, 241, 0.1);
+    --nav-bg: rgba(248, 250, 252, 0.95); /* Clean light header */
+    --bg-gradient: radial-gradient(ellipse at top, #e0e7ff 0%, #f8fafc 50%); /* Light ambient gradient */
+    --shadow: 0 25px 50px rgba(0, 0, 0, 0.05); /* Softer card shadows */
 }
 
 body {
@@ -27,6 +46,7 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
+    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
 /* Animated Background */
@@ -37,7 +57,8 @@ body {
     width: 100%;
     height: 100%;
     z-index: -2;
-    background: radial-gradient(ellipse at top, #1e1b4b 0%, #0f0f23 50%);
+    background: var(--bg-gradient);
+    transition: background var(--transition-speed) ease;
 }
 
 .bg-animation::before {
@@ -61,10 +82,10 @@ nav {
     position: fixed;
     top: 0;
     width: 100%;
-    background: rgba(15, 15, 35, 0.95);
+    background: var(--nav-bg);
     backdrop-filter: blur(20px);
     z-index: 1000;
-    transition: all 0.3s ease;
+    transition: all var(--transition-speed) ease;
     border-bottom: 1px solid var(--border);
 }
 
@@ -230,12 +251,13 @@ nav {
     background: var(--card-bg);
     border-radius: 25px;
     padding: 2rem;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow);
     border: 1px solid var(--border);
     text-align: center;
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(10px);
+    transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
 .profile-card::before {
@@ -478,12 +500,12 @@ nav {
     padding: 2.5rem;
     border: 1px solid var(--border);
     margin-left: 2rem;
-    transition: all 0.3s ease;
+    transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease, transform 0.3s ease;
 }
 
 .timeline-item:hover {
     transform: translateX(10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow);
     border-color: var(--primary);
 }
 
@@ -528,11 +550,12 @@ nav {
 }
 
 .timeline-highlight {
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(99, 102, 241, 0.2);
     padding: 0.2rem 0.5rem;
     border-radius: 5px;
-    color: var(--primary);
+    color: #c7d2fe; /* High contrast light indigo for dark mode */
     font-weight: 600;
+    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
 /* Projects Section */
@@ -835,6 +858,44 @@ footer {
     transform: translateY(0);
 }
 
+/* Theme Toggle & Custom Light Mode overrides */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.theme-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-speed) ease;
+    border: 1px solid var(--border);
+}
+
+.theme-toggle:hover {
+    background: var(--card-bg);
+    transform: scale(1.1);
+    box-shadow: var(--glow);
+}
+
+.theme-toggle i {
+    transition: transform var(--transition-speed) ease;
+}
+
+[data-theme="light"] .bg-animation::before {
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .nav-links {
@@ -851,7 +912,7 @@ footer {
         top: 100%;
         left: 0;
         width: 100%;
-        background: rgba(15, 15, 35, 0.98);
+        background: var(--nav-bg);
         backdrop-filter: blur(20px);
         flex-direction: column;
         padding: 2rem;
@@ -869,6 +930,12 @@ footer {
     
     .mobile-menu.active span:nth-child(3) {
         transform: rotate(45deg) translate(-5px, -6px);
+    }
+
+    .hero {
+        padding-top: 100px;
+        min-height: auto;
+        padding-bottom: 4rem;
     }
 
     .hero-container {
@@ -909,22 +976,50 @@ footer {
         grid-template-columns: 1fr;
     }
 
+    .skill-category {
+        padding: 1.5rem;
+    }
+
+    .project-header,
+    .project-content {
+        padding: 1.25rem;
+    }
+
+    .project-tech {
+        font-size: 0.85rem;
+    }
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 2rem;
     }
 
     .experience-timeline {
-        padding-left: 1.5rem;
+        padding-left: 0.5rem;
+    }
+
+    .experience-timeline::before {
+        left: 13px;
     }
 
     .timeline-item {
-        margin-left: 1rem;
-        padding: 2rem;
+        margin-left: 1.5rem;
+        padding: 1.25rem;
+        margin-bottom: 2.5rem;
     }
 
     .timeline-item::before {
-        left: -2.5rem;
+        left: -25px;
+        top: 1.5rem;
+    }
+
+    .scroll-to-top {
+        bottom: 20px !important;
+        right: 20px !important;
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 1rem !important;
+        z-index: 2000 !important;
     }
 }
 

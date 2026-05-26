@@ -557,30 +557,63 @@ function lazyLoadImages() {
 // Initialize lazy loading
 lazyLoadImages();
 
-// Add theme persistence
+// Add theme toggle and persistence
+function updateToggleIcon(theme) {
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (!toggleBtn) return;
+    const icon = toggleBtn.querySelector('i');
+    if (!icon) return;
+    
+    if (theme === 'light') {
+        icon.className = 'fas fa-sun';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        icon.className = 'fas fa-moon';
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
 function saveThemePreference(theme) {
     try {
         localStorage.setItem('theme', theme);
     } catch (e) {
-        // Fallback for environments where localStorage is not available
+        console.log('Could not save theme preference');
+    }
+}
+
+function initThemeToggle() {
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (!toggleBtn) return;
+    
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Default theme is dark as defined in portfolio style
+    let currentTheme = 'dark';
+    if (savedTheme) {
+        currentTheme = savedTheme;
+    } else if (savedTheme === null && !prefersDark) {
+        currentTheme = 'light';
+    }
+    
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateToggleIcon(currentTheme);
+    
+    toggleBtn.addEventListener('click', () => {
+        const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', theme);
-    }
-}
-
-function loadThemePreference() {
-    try {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
+        saveThemePreference(theme);
+        updateToggleIcon(theme);
+        
+        // Track the theme change event
+        if (typeof trackEvent === 'function') {
+            trackEvent('theme_toggle_click', { theme: theme });
         }
-    } catch (e) {
-        // Fallback - use default theme
-        console.log('Theme persistence not available');
-    }
+    });
 }
 
-// Load theme on page load
-loadThemePreference();
+// Initialize theme toggle
+initThemeToggle();
 
 // Add intersection observer for better performance
 function optimizeAnimations() {
